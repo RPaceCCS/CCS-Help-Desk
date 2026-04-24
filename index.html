@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCS Staffing — IT Support Portal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap');
+  :root {
+    --bg: #0f1117; --surface: #181c27; --surface2: #1e2333; --border: #2a3049;
+    --accent: #4caf50; --accent-dim: #0f2d10;
+    --green: #22c55e; --green-dim: #0f2d1f;
+    --amber: #f59e0b; --amber-dim: #2d1f0a;
+    --red: #ef4444; --red-dim: #2d0f0f;
+    --text: #e8eaf6; --muted: #6b7280; --muted2: #9ca3af;
+    --radius: 10px; --font: 'Sora', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 32px;
+  }
+  .topbar-logo { display: flex; align-items: center; gap: 14px; }
+  .topbar-logo img { height: 38px; }
+  .topbar-logo-divider { width: 1px; height: 28px; background: var(--border); }
+  .topbar-logo-text { font-size: 13px; color: var(--muted2); font-family: var(--mono); }
+  .topbar-nav { display: flex; gap: 4px; }
+  .nav-btn {
+    padding: 7px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    border: none; background: none; color: var(--muted2); font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent-dim); color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 40px 32px 32px; text-align: center;
+  }
+  .hero h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { font-size: 14px; color: var(--muted2); max-width: 500px; margin: 0 auto; line-height: 1.6; }
+  .hero-cards { display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+  .hero-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 22px; cursor: pointer; transition: all 0.15s; text-align: center; min-width: 160px;
+  }
+  .hero-card:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .hero-card .hc-icon { font-size: 22px; margin-bottom: 6px; }
+  .hero-card .hc-label { font-size: 13px; font-weight: 500; }
+  .hero-card .hc-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+
+  /* CONTENT */
+  .content { max-width: 740px; margin: 0 auto; padding: 32px 20px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* FORM */
+  .form-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+  }
+  .form-card h3 { font-size: 17px; margin-bottom: 6px; }
+  .form-card .form-intro { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: var(--muted2); margin-bottom: 6px; font-family: var(--mono); }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 14px; border-radius: 8px;
+    font-size: 13.5px; font-family: var(--font); outline: none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .form-group select option { background: var(--surface2); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-footer { display: flex; gap: 10px; margin-top: 20px; }
+
+  .btn {
+    padding: 10px 20px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; border: none; font-family: var(--font); font-weight: 500; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3d9e41; }
+  .btn-ghost { background: var(--surface2); color: var(--muted2); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); }
+
+  /* MY TICKETS */
+  .lookup-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .lookup-bar input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: var(--font); outline: none; }
+  .lookup-bar input:focus { border-color: var(--accent); }
+  .lookup-bar input::placeholder { color: var(--muted); }
+
+  .ticket-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px; margin-bottom: 10px;
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .ticket-card:hover { border-color: var(--accent); }
+  .ticket-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .ticket-card h4 { font-size: 14px; font-weight: 500; }
+  .ticket-card .tc-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+  .ticket-card .tc-desc { font-size: 12.5px; color: var(--muted2); margin-top: 8px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* TICKET DETAIL */
+  .back-btn { color: var(--muted2); font-size: 13px; cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; background: none; border: none; font-family: var(--font); }
+  .back-btn:hover { color: var(--accent); }
+  .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; }
+  .detail-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .detail-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .detail-desc-text { font-size: 13.5px; line-height: 1.7; color: var(--muted2); border-top: 1px solid var(--border); padding-top: 14px; }
+  .status-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-family: var(--mono); font-weight: 500; }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .badge.open { background: var(--accent-dim); color: var(--accent); }
+  .badge.open .badge-dot { background: var(--accent); }
+  .badge.in-progress { background: var(--amber-dim); color: var(--amber); }
+  .badge.in-progress .badge-dot { background: var(--amber); }
+  .badge.resolved { background: var(--green-dim); color: var(--green); }
+  .badge.resolved .badge-dot { background: var(--green); }
+  .badge.closed { background: var(--surface2); color: var(--muted); }
+  .badge.closed .badge-dot { background: var(--muted); }
+  .badge.critical { background: var(--red-dim); color: var(--red); }
+  .badge.high { background: var(--amber-dim); color: var(--amber); }
+  .badge.medium { background: var(--accent-dim); color: var(--accent); }
+  .badge.low { background: var(--green-dim); color: var(--green); }
+  .badge.sr-pending { background: var(--amber-dim); color: var(--amber); }
+  .badge.sr-pending .badge-dot { background: var(--amber); }
+  .badge.sr-reviewing { background: var(--accent-dim); color: var(--accent); }
+  .badge.sr-reviewing .badge-dot { background: var(--accent); }
+  .badge.sr-approved { background: var(--green-dim); color: var(--green); }
+  .badge.sr-approved .badge-dot { background: var(--green); }
+  .badge.sr-denied { background: var(--red-dim); color: var(--red); }
+  .badge.sr-denied .badge-dot { background: var(--red); }
+
+  .comment { display: flex; gap: 12px; margin-bottom: 14px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-dim); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .comment-body { flex: 1; }
+  .comment-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 5px; }
+  .comment-meta strong { color: var(--muted2); }
+  .comment-text { font-size: 13px; line-height: 1.6; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+
+  /* STATUS TRACKER */
+  .status-tracker { display: flex; align-items: center; gap: 0; margin: 16px 0; }
+  .tracker-step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+  .tracker-step:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+  .tracker-step.done:not(:last-child)::after { background: var(--accent); }
+  .tracker-dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface2); z-index: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .tracker-step.done .tracker-dot { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .tracker-step.current .tracker-dot { border-color: var(--amber); background: var(--amber-dim); color: var(--amber); }
+  .tracker-label { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 6px; text-align: center; }
+  .tracker-step.done .tracker-label { color: var(--accent); }
+  .tracker-step.current .tracker-label { color: var(--amber); }
+
+  /* EMPTY / INFO */
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .empty-state .ei { font-size: 36px; margin-bottom: 10px; opacity: 0.35; }
+  .empty-state p { font-size: 14px; }
+  .info-box { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--accent); margin-bottom: 18px; line-height: 1.6; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green-dim); border: 1px solid var(--green); color: var(--green); padding: 12px 18px; border-radius: 10px; font-size: 13px; font-family: var(--mono); z-index: 200; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 30px; font-size: 12px; color: var(--muted); font-family: var(--mono); border-top: 1px solid var(--border); margin-top: 40px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .topbar { padding: 12px 16px; }
+    .hero { padding: 28px 16px 24px; }
+    .content { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <img src="logo.png" alt="CCS Construction Staffing">
+    <div class="topbar-logo-divider"></div>
+    <div class="topbar-logo-text">IT Support Portal</div>
+  </div>
+  <div class="topbar-nav">
+    <button class="nav-btn active" onclick="showView('home')">Home</button>
+    <button class="nav-btn" onclick="showView('ticket')">New Ticket</button>
+    <button class="nav-btn" onclick="showView('software')">Request Software</button>
+    <button class="nav-btn" onclick="showView('mytickets')">My Tickets</button>
+  </div>
+</div>
+
+<div class="hero" id="heroSection">
+  <h1>How can we <span>help you?</span></h1>
+  <p>Submit a support ticket or software request and the CCS IT team will get back to you as soon as possible.</p>
+  <div class="hero-cards">
+    <div class="hero-card" onclick="showView('ticket')">
+      <div class="hc-icon">⚙</div>
+      <div class="hc-label">IT Support Ticket</div>
+      <div class="hc-sub">Hardware, software, network</div>
+    </div>
+    <div class="hero-card" onclick="showView('software')">
+      <div class="hc-icon">◉</div>
+      <div class="hc-label">Request Software</div>
+      <div class="hc-sub">New tools & applications</div>
+    </div>
+    <div class="hero-card" onclick="showView('mytickets')">
+      <div class="hc-icon">≡</div>
+      <div class="hc-label">My Tickets</div>
+      <div class="hc-sub">Check status & replies</div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- HOME -->
+  <div class="view active" id="view-home"></div>
+
+  <!-- NEW TICKET -->
+  <div class="view" id="view-ticket">
+    <div class="form-card">
+      <h3>Submit a Support Ticket</h3>
+      <p class="form-intro">Describe your issue below and a member of the CCS IT team will respond as soon as possible. For urgent issues affecting the whole team, select Critical priority.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your Name *</label>
+          <input type="text" id="tName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="tEmail" placeholder="your@ccsstaffing.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Issue Title *</label>
+        <input type="text" id="tTitle" placeholder="Brief description of the problem">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="tCategory">
+            <option>Hardware</option>
+            <option>Software</option>
+            <option>Network</option>
+            <option>Access & Accounts</option>
+            <option>Email</option>
+            <option>Printer</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="tPriority">
+            <option value="low">Low — minor inconvenience</option>
+            <option value="medium" selected>Medium — affecting my work</option>
+            <option value="high">High — can't work properly</option>
+            <option value="critical">Critical — whole team impacted</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea id="tDesc" placeholder="Please describe the issue in detail. Include any error messages, when it started, and what you've already tried."></textarea>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" onclick="submitTicket()">Submit Ticket</button>
+        <button class="btn btn-ghost" onclick="showView('home')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUEST SOFTWARE -->
+  <div class="view" id="view-software">
+    <div class="form-card">
+      <h3>Request 3rd Party Software</h3>
+      <p class="form-intro">Need a new tool or application for your work? Submit a request below. The CCS IT team will review it and follow up with you directly.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your Name *</label>
+          <input type="text" id="sName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="sEmail" placeholder="your@ccsstaffing.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Department *</label>
+          <input type="text" id="sDept" placeholder="e.g. Marketing, Finance, Sales">
+        </div>
+        <div class="form-group">
+          <label>Software / Tool Name *</label>
+          <input type="text" id="sSoftware" placeholder="e.g. Figma, Slack, Salesforce">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Vendor / Website</label>
+          <input type="text" id="sVendor" placeholder="e.g. figma.com">
+        </div>
+        <div class="form-group">
+          <label>Software Category</label>
+          <select id="sCat">
+            <option>Design & Creative</option>
+            <option>Project Management</option>
+            <option>Communication</option>
+            <option>CRM / Sales</option>
+            <option>Analytics & Reporting</option>
+            <option>Security</option>
+            <option>Development Tools</option>
+            <option>Finance & Accounting</option>
+            <option>HR & People Ops</option>
+            <option>Productivity</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estimated Monthly Cost</label>
+          <input type="text" id="sCost" placeholder="e.g. $25/user/mo or Free">
+        </div>
+        <div class="form-group">
+          <label>Number of Users Needed</label>
+          <input type="text" id="sUsers" placeholder="e.g. 5, entire team, just me">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Business Justification *</label>
+        <textarea id="sJustification" style="min-height:110px;" placeholder="Why is this tool needed? What problem does it solve? How will it improve your work?"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Alternatives Considered</label>
+        <textarea id="sAlternatives" style="min-height:70px;" placeholder="Have you looked at other tools? Are there existing tools that could work?"></textarea>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" onclick="submitSoftware()">Submit Request</button>
+        <button class="btn btn-ghost" onclick="showView('home')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY TICKETS -->
+  <div class="view" id="view-mytickets">
+    <div class="info-box">Enter your email address below to see all tickets and software requests you've submitted.</div>
+    <div class="lookup-bar">
+      <input type="email" id="lookupEmail" placeholder="Enter your email address..." onkeydown="if(event.key==='Enter')lookupTickets()">
+      <button class="btn btn-primary" onclick="lookupTickets()">Look Up</button>
+    </div>
+    <div id="myTicketsList"></div>
+  </div>
+
+  <!-- TICKET DETAIL -->
+  <div class="view" id="view-detail">
+    <button class="back-btn" onclick="showView('mytickets')">← Back to my tickets</button>
+    <div class="detail-card">
+      <div class="status-row">
+        <span id="dStatus"></span>
+        <span id="dPriority"></span>
+      </div>
+      <h3 id="dTitle"></h3>
+      <div class="detail-meta">
+        <span id="dId"></span>
+        <span id="dCategory"></span>
+        <span id="dDate"></span>
+        <span id="dAssigned"></span>
+      </div>
+      <div class="status-tracker" id="dTracker"></div>
+      <div class="detail-desc-text" id="dDesc"></div>
+    </div>
+    <div class="detail-card">
+      <div style="font-size:13px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;">Updates & Replies</div>
+      <div id="dComments"></div>
+    </div>
+  </div>
+
+  <!-- SW DETAIL -->
+  <div class="view" id="view-swdetail">
+    <button class="back-btn" onclick="showView('mytickets')">← Back to my tickets</button>
+    <div class="detail-card">
+      <div class="status-row">
+        <span id="swdStatus"></span>
+      </div>
+      <h3 id="swdTitle"></h3>
+      <div class="detail-meta">
+        <span id="swdId"></span>
+        <span id="swdCat"></span>
+        <span id="swdDate"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;padding-top:14px;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Vendor</div>
+          <div id="swdVendor" style="font-size:14px;"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Est. Cost</div>
+          <div id="swdCost" style="font-size:14px;"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Users</div>
+          <div id="swdUsers" style="font-size:14px;"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Department</div>
+          <div id="swdDept" style="font-size:14px;"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Business Justification</div>
+      <div id="swdJustification" style="font-size:13.5px;line-height:1.7;color:var(--muted2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;"></div>
+    </div>
+    <div class="detail-card">
+      <div style="font-size:13px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;">Review Notes</div>
+      <div id="swdComments"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">CCS Construction Staffing &mdash; IT Support Portal &mdash; For technical issues contact your IT team directly. &nbsp;|&nbsp; <a href="admin.html" style="color:var(--muted);text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">IT Staff Login</a></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'helpdesk_v1';
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { tickets:[], swRequests:[], nextId:1001, nextSWId:2001 }; } catch(e) { return { tickets:[], swRequests:[], nextId:1001, nextSWId:2001 }; }
+}
+function saveData(d) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+}
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const map = { home:'Home', ticket:'New Ticket', software:'Request Software', mytickets:'My Tickets' };
+  document.querySelectorAll('.nav-btn').forEach(b => { if (b.textContent.trim() === (map[name]||'')) b.classList.add('active'); });
+  const hero = document.getElementById('heroSection');
+  hero.style.display = name === 'home' ? 'block' : 'none';
+  window.scrollTo(0,0);
+}
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (err?' error':'');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+function statusBadge(s) {
+  const labels = { open:'Open', 'in-progress':'In Progress', resolved:'Resolved', closed:'Closed' };
+  return `<span class="badge ${s}"><span class="badge-dot"></span>${labels[s]||s}</span>`;
+}
+function priorityBadge(p) {
+  return `<span class="badge ${p}">${p.charAt(0).toUpperCase()+p.slice(1)}</span>`;
+}
+function swStatusBadge(s) {
+  const labels = { pending:'Pending Review', reviewing:'Under Review', approved:'Approved', denied:'Denied' };
+  return `<span class="badge sr-${s}"><span class="badge-dot"></span>${labels[s]||s}</span>`;
+}
+
+// ---- SUBMIT TICKET ----
+function submitTicket() {
+  const name = document.getElementById('tName').value.trim();
+  const email = document.getElementById('tEmail').value.trim();
+  const title = document.getElementById('tTitle').value.trim();
+  const desc = document.getElementById('tDesc').value.trim();
+  if (!name||!email||!title||!desc) return showToast('Please fill in all required fields', true);
+
+  const d = loadData();
+  const ticket = {
+    id: '#' + d.nextId++, title, desc,
+    category: document.getElementById('tCategory').value,
+    priority: document.getElementById('tPriority').value,
+    submitter: name, email,
+    status: 'open', assigned: 'Unassigned',
+    created: new Date().toISOString(), comments: [],
+  };
+  d.tickets.unshift(ticket);
+  saveData(d);
+  ['tName','tEmail','tTitle','tDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tPriority').value = 'medium';
+  showToast('Ticket submitted! ID: ' + ticket.id + ' — use your email to check status.');
+  setTimeout(()=>showView('home'), 2000);
+}
+
+// ---- SUBMIT SOFTWARE ----
+function submitSoftware() {
+  const name = document.getElementById('sName').value.trim();
+  const email = document.getElementById('sEmail').value.trim();
+  const dept = document.getElementById('sDept').value.trim();
+  const software = document.getElementById('sSoftware').value.trim();
+  const just = document.getElementById('sJustification').value.trim();
+  if (!name||!email||!dept||!software||!just) return showToast('Please fill in all required fields', true);
+
+  const d = loadData();
+  const req = {
+    id: 'SW-' + d.nextSWId++, software,
+    vendor: document.getElementById('sVendor').value.trim(),
+    category: document.getElementById('sCat').value,
+    cost: document.getElementById('sCost').value.trim(),
+    users: document.getElementById('sUsers').value.trim(),
+    dept, justification: just,
+    alternatives: document.getElementById('sAlternatives').value.trim(),
+    submitter: name, email,
+    status: 'pending', assigned: 'Unassigned',
+    created: new Date().toISOString(), comments: [],
+  };
+  d.swRequests.unshift(req);
+  saveData(d);
+  ['sName','sEmail','sDept','sSoftware','sVendor','sCost','sUsers','sJustification','sAlternatives'].forEach(id => document.getElementById(id).value = '');
+  showToast('Request submitted! ID: ' + req.id + ' — use your email to check status.');
+  setTimeout(()=>showView('home'), 2000);
+}
+
+// ---- MY TICKETS LOOKUP ----
+function lookupTickets() {
+  const email = document.getElementById('lookupEmail').value.trim().toLowerCase();
+  if (!email) return showToast('Please enter your email address', true);
+  const d = loadData();
+  const tickets = d.tickets.filter(t => (t.email||'').toLowerCase() === email);
+  const swReqs = (d.swRequests||[]).filter(r => (r.email||'').toLowerCase() === email);
+  const container = document.getElementById('myTicketsList');
+
+  if (!tickets.length && !swReqs.length) {
+    container.innerHTML = `<div class="empty-state"><div class="ei">◻</div><p>No tickets found for <strong>${escHtml(email)}</strong>.<br>Double-check your email or submit a new ticket.</p></div>`;
+    return;
+  }
+
+  let html = '';
+  if (tickets.length) {
+    html += `<div style="font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Support Tickets (${tickets.length})</div>`;
+    html += tickets.map(t => `
+      <div class="ticket-card" onclick="openTicket('${escHtml(t.id)}','${escHtml(email)}')">
+        <div class="ticket-card-header">
+          <h4>${escHtml(t.title)}</h4>
+          <div style="display:flex;gap:6px;flex-shrink:0;">${statusBadge(t.status)}</div>
+        </div>
+        <div class="tc-meta">
+          <span>${escHtml(t.id)}</span>
+          <span>${escHtml(t.category)}</span>
+          <span>${priorityBadge(t.priority)}</span>
+          <span>${fmtDate(t.created)}</span>
+        </div>
+        <div class="tc-desc">${escHtml(t.desc)}</div>
+      </div>`).join('');
+  }
+
+  if (swReqs.length) {
+    html += `<div style="font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin:18px 0 10px;">Software Requests (${swReqs.length})</div>`;
+    html += swReqs.map(r => `
+      <div class="ticket-card" onclick="openSWDetail('${escHtml(r.id)}','${escHtml(email)}')">
+        <div class="ticket-card-header">
+          <h4>${escHtml(r.software)}</h4>
+          <div style="display:flex;gap:6px;flex-shrink:0;">${swStatusBadge(r.status)}</div>
+        </div>
+        <div class="tc-meta">
+          <span>${escHtml(r.id)}</span>
+          <span>${escHtml(r.category)}</span>
+          <span>${escHtml(r.dept)}</span>
+          <span>${fmtDate(r.created)}</span>
+        </div>
+        <div class="tc-desc">${escHtml(r.justification)}</div>
+      </div>`).join('');
+  }
+
+  container.innerHTML = html;
+}
+
+// ---- TICKET DETAIL ----
+function openTicket(id, email) {
+  const d = loadData();
+  const t = d.tickets.find(x => x.id === id);
+  if (!t) return;
+
+  document.getElementById('dTitle').textContent = t.title;
+  document.getElementById('dId').textContent = t.id;
+  document.getElementById('dCategory').textContent = t.category;
+  document.getElementById('dDate').textContent = 'Submitted ' + fmtDate(t.created);
+  document.getElementById('dAssigned').textContent = t.assigned && t.assigned !== 'Unassigned' ? 'Assigned to ' + t.assigned : 'Unassigned';
+  document.getElementById('dStatus').innerHTML = statusBadge(t.status);
+  document.getElementById('dPriority').innerHTML = priorityBadge(t.priority);
+  document.getElementById('dDesc').textContent = t.desc;
+
+  // Status tracker
+  const steps = ['open','in-progress','resolved','closed'];
+  const labels = ['Submitted','In Progress','Resolved','Closed'];
+  const cur = steps.indexOf(t.status);
+  document.getElementById('dTracker').innerHTML = steps.map((s,i) => {
+    const cls = i < cur ? 'done' : i === cur ? 'current' : '';
+    return `<div class="tracker-step ${cls}"><div class="tracker-dot">${i < cur ? '✓' : i+1}</div><div class="tracker-label">${labels[i]}</div></div>`;
+  }).join('');
+
+  // Comments (hide staff-only notes)
+  const comments = (t.comments||[]).filter(c => !c.isStaff);
+  const cc = document.getElementById('dComments');
+  if (!comments.length) {
+    cc.innerHTML = '<p style="font-size:13px;color:var(--muted);">No updates yet. The IT team will post updates here once they begin working on your ticket.</p>';
+  } else {
+    cc.innerHTML = comments.map(c => `
+      <div class="comment">
+        <div class="avatar">${initials(c.author)}</div>
+        <div class="comment-body">
+          <div class="comment-meta"><strong>${escHtml(c.author)}</strong> · ${fmtDate(c.time)}</div>
+          <div class="comment-text">${escHtml(c.text)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  showView('detail');
+}
+
+// ---- SW DETAIL ----
+function openSWDetail(id, email) {
+  const d = loadData();
+  const r = (d.swRequests||[]).find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById('swdTitle').textContent = r.software;
+  document.getElementById('swdId').textContent = r.id;
+  document.getElementById('swdCat').textContent = r.category;
+  document.getElementById('swdDate').textContent = 'Submitted ' + fmtDate(r.created);
+  document.getElementById('swdStatus').innerHTML = swStatusBadge(r.status);
+  document.getElementById('swdVendor').textContent = r.vendor || 'Not specified';
+  document.getElementById('swdCost').textContent = r.cost || 'Not specified';
+  document.getElementById('swdUsers').textContent = r.users || 'Not specified';
+  document.getElementById('swdDept').textContent = r.dept;
+  document.getElementById('swdJustification').textContent = r.justification;
+
+  const comments = (r.comments||[]);
+  const cc = document.getElementById('swdComments');
+  if (!comments.length) {
+    cc.innerHTML = '<p style="font-size:13px;color:var(--muted);">No review notes yet. The IT team will update this once your request is under review.</p>';
+  } else {
+    cc.innerHTML = comments.map(c => `
+      <div class="comment">
+        <div class="avatar">${initials(c.author)}</div>
+        <div class="comment-body">
+          <div class="comment-meta"><strong>${escHtml(c.author)}</strong> · ${fmtDate(c.time)}</div>
+          <div class="comment-text">${escHtml(c.text)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  showView('swdetail');
+}
+
+// Init
+showView('home');
+</script>
+</body>
+</html>
